@@ -1,0 +1,37 @@
+name: Build Action
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The branch
+        type: string
+        default: main
+        required: true
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      with:
+        ref: ${{ inputs.ref }}
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '16'
+    - name: Install dependencies
+      run: |
+        npm ci
+    - name: Build Action
+      run: |
+        npm run build
+    - name: Update dist
+      env:
+        INPUT_REF: ${{ inputs.ref }}
+      run: |
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git add ./dist &&
+        git commit -m "Update dist"
+        git push origin HEAD:"$INPUT_REF"

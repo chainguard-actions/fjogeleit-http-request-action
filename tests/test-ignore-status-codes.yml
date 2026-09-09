@@ -1,0 +1,24 @@
+name: Test ignoreStatusCodes prevents failure on error status
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/status/404'
+          method: 'GET'
+          ignoreStatusCodes: '404'
+      - name: Assert action did not fail on 404
+        env:
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          if [ "$STATUS" != "404" ]; then
+            echo "FAIL: expected status 404, got '$STATUS'"
+            exit 1
+          fi
+          echo "PASS: action handled 404 gracefully via ignoreStatusCodes"

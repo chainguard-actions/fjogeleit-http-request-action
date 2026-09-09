@@ -1,0 +1,28 @@
+name: Test Basic Auth (username + password)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/basic-auth/testuser/testpass'
+          method: GET
+          username: testuser
+          password: testpass
+      - name: Assert response contains authenticated
+        env:
+          RESP: ${{ steps.action.outputs.response }}
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          echo "response: $RESP"
+          if echo "$RESP" | grep -q '"authenticated"'; then
+            echo "PASS: response contains authenticated"
+          else
+            echo "FAIL: expected authenticated in response"
+            exit 1
+          fi

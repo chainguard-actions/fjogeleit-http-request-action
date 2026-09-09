@@ -1,0 +1,30 @@
+name: Test responseFile input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          responseFile: '/tmp/http-response.json'
+      - name: Assert response file was written
+        env:
+          RESP: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response output: $RESP"
+          if [ ! -f /tmp/http-response.json ]; then
+            echo "FAIL: responseFile was not created at /tmp/http-response.json"
+            exit 1
+          fi
+          CONTENT=$(cat /tmp/http-response.json)
+          echo "file content: $CONTENT"
+          if [ -z "$CONTENT" ]; then
+            echo "FAIL: responseFile is empty"
+            exit 1
+          fi
+          echo "PASS: responseFile was written with content"

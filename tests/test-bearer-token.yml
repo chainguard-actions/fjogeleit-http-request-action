@@ -1,0 +1,48 @@
+name: Test bearer token authentication
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/bearer'
+          method: 'GET'
+          bearerToken: 'my-test-token-12345'
+      - name: Assert response is non-empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          echo "PASS: got a non-empty response"
+      - name: Assert bearer auth was accepted
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if ! echo "$RESPONSE" | grep -q '"authenticated"'; then
+            echo "FAIL: response does not contain 'authenticated' field"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | grep -q 'true'; then
+            echo "FAIL: response does not show authenticated: true"
+            exit 1
+          fi
+          echo "PASS: bearer token authentication succeeded"
+      - name: Assert status is 200
+        env:
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: expected status 200, got '$STATUS'"
+            exit 1
+          fi
+          echo "PASS: status is 200"

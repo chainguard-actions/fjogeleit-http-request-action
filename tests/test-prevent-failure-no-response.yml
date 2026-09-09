@@ -1,0 +1,21 @@
+name: Test preventFailureOnNoResponse
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'http://this-host-does-not-exist-at-all-12345.invalid/path'
+          method: 'GET'
+          timeout: '3000'
+          preventFailureOnNoResponse: 'true'
+      - name: Assert action did not fail despite no response
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: '$RESPONSE'"
+          echo "PASS: action completed without failing even though host is unreachable"

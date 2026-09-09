@@ -1,0 +1,48 @@
+name: Test custom HTTP headers
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/headers'
+          method: 'GET'
+          customHeaders: '{"X-Custom-Header": "test-value-abc", "X-Another-Header": "hello"}'
+      - name: Assert response is non-empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          echo "PASS: got a non-empty response"
+      - name: Assert custom headers were sent
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if ! echo "$RESPONSE" | grep -qi 'X-Custom-Header'; then
+            echo "FAIL: response does not reflect X-Custom-Header"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | grep -q 'test-value-abc'; then
+            echo "FAIL: response does not contain custom header value 'test-value-abc'"
+            exit 1
+          fi
+          echo "PASS: custom headers were sent and reflected in response"
+      - name: Assert status is 200
+        env:
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: expected status 200, got '$STATUS'"
+            exit 1
+          fi
+          echo "PASS: status is 200"

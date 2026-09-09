@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'releases/*'
+
+jobs:
+  build:
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - id: ref
+      env:
+        EVENT_REF: ${{ github.event.ref }}
+        PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      run: |
+        if [[ -n "$EVENT_REF" ]]; then
+          safe=$(printf '%s' "$EVENT_REF" | tr -d '\n\r')
+          echo "branch=$safe" >> "$GITHUB_OUTPUT"
+        else
+          safe=$(printf '%s' "$PR_HEAD_REF" | tr -d '\n\r')
+          echo "branch=$safe" >> "$GITHUB_OUTPUT"
+        fi
+    - name: checkout repo
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      with:
+        ref: ${{ steps.ref.outputs.branch }}
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '16'
+    - name: Install dependencies
+      run: |
+        npm ci
+    - name: Build Action
+      run: |
+        npm run build
+    - name: Update dist
+      env:
+        PUSH_REF: ${{ steps.ref.outputs.branch }}
+      run: |
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+        git add ./dist
+        if ! git diff --quiet dist; then
+          git commit -m "Update dist"
+          git push origin HEAD:"$PUSH_REF"
+        fi
+  integrity:
+    if: >
+      !failure() &&
+      !cancelled()
+    needs:
+      - build
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout repo
+      uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      with:
+        node-version: '16.17.0'
+    - name: Build action
+      run: |
+        npm ci
+        npm run build
+    - name: Repository Integrity Check
+      run: |
+        git diff --quiet dist
