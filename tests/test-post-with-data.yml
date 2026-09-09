@@ -1,0 +1,39 @@
+name: Test POST request with JSON data
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/post'
+          method: 'POST'
+          contentType: 'application/json'
+          data: '{"hello": "world", "foo": "bar"}'
+      - name: Assert response is not empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response output is empty"
+            exit 1
+          fi
+          echo "PASS: got a response"
+      - name: Assert response echoes back the posted data
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if ! echo "$RESPONSE" | grep -q '"hello"'; then
+            echo "FAIL: response does not contain posted key 'hello'"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | grep -q '"world"'; then
+            echo "FAIL: response does not contain posted value 'world'"
+            exit 1
+          fi
+          echo "PASS: response contains echoed POST data"

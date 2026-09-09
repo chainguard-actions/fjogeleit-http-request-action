@@ -1,0 +1,32 @@
+name: Test httpsCA input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Read system CA bundle
+        id: ca
+        run: |
+          CA_CONTENT=$(cat /etc/ssl/certs/ca-certificates.crt)
+          # Use a delimiter to safely set multiline output
+          echo "ca_content<<CAEOF" >> "$GITHUB_OUTPUT"
+          echo "$CA_CONTENT" >> "$GITHUB_OUTPUT"
+          echo "CAEOF" >> "$GITHUB_OUTPUT"
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          httpsCA: ${{ steps.ca.outputs.ca_content }}
+      - name: Assert response is non-empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          echo "PASS: got a response with httpsCA set"

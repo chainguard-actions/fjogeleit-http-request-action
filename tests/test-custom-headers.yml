@@ -1,0 +1,38 @@
+name: Test custom headers
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: 'GET'
+          customHeaders: '{"X-Custom-Header": "test-value-123", "X-Another-Header": "another-value"}'
+      - name: Assert response is not empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response output is empty"
+            exit 1
+          fi
+          echo "PASS: got a response"
+      - name: Assert custom headers were sent
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if ! echo "$RESPONSE" | grep -qi 'X-Custom-Header\|x-custom-header'; then
+            echo "FAIL: response does not reflect custom header X-Custom-Header"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | grep -q 'test-value-123'; then
+            echo "FAIL: response does not contain custom header value 'test-value-123'"
+            exit 1
+          fi
+          echo "PASS: custom headers were sent and echoed back"

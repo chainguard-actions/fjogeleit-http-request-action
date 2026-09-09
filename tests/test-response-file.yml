@@ -1,0 +1,44 @@
+name: Test responseFile persists response to file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: 'GET'
+          responseFile: '/tmp/http-response.json'
+      - name: Assert response output is not empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response output is empty"
+            exit 1
+          fi
+          echo "PASS: got a response"
+      - name: Assert response file was created
+        run: |
+          if [ ! -f /tmp/http-response.json ]; then
+            echo "FAIL: response file /tmp/http-response.json was not created"
+            exit 1
+          fi
+          echo "PASS: response file exists"
+      - name: Assert response file contains valid content
+        run: |
+          CONTENT=$(cat /tmp/http-response.json)
+          echo "file content: $CONTENT"
+          if [ -z "$CONTENT" ]; then
+            echo "FAIL: response file is empty"
+            exit 1
+          fi
+          if ! echo "$CONTENT" | grep -q '"url"'; then
+            echo "FAIL: response file does not contain expected 'url' field"
+            exit 1
+          fi
+          echo "PASS: response file contains valid content"

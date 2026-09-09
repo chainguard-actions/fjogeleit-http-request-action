@@ -1,0 +1,25 @@
+name: Test retry and retryWait inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          retry: '2'
+          retryWait: '500'
+      - name: Assert response is non-empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          echo "PASS: got a response with retry and retryWait set"
