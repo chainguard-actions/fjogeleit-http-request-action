@@ -1,6 +1,11 @@
 {
   "owner": "fjogeleit",
   "repo": "http-request-action",
-  "version": "",
-  "url": "https://github.com/fjogeleit/http-request-action"
+  "version": "v1.15.2",
+  "commit_sha": "0bd00a33db6f82063a3c6befd41f232f61d66583",
+  "url": "https://github.com/fjogeleit/http-request-action",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2"
 }

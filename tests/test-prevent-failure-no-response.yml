@@ -1,0 +1,25 @@
+name: Test preventFailureOnNoResponse prevents failure on no response
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'http://localhost:19999/nonexistent'
+          method: 'GET'
+          preventFailureOnNoResponse: 'true'
+          timeout: '2000'
+      - name: Assert step succeeded despite no response
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected action to succeed when preventFailureOnNoResponse=true, but got outcome: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action succeeded despite no response from server"

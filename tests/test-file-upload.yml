@@ -1,0 +1,27 @@
+name: Test file input (single file upload)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a temp file to upload
+        run: |
+          echo "hello from test file" > /tmp/test-upload.txt
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/post'
+          method: POST
+          file: /tmp/test-upload.txt
+      - name: Assert response received
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          echo "PASS: got response"

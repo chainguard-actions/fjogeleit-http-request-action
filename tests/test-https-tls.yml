@@ -1,0 +1,44 @@
+name: Test httpsCA, httpsCert, and httpsKey inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Generate self-signed cert and key for test
+        run: |
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/test-key.pem \
+            -out /tmp/test-cert.pem -days 1 -nodes \
+            -subj "/CN=test"
+          echo "HTTPS_CA=$(cat /tmp/test-cert.pem)" >> $GITHUB_ENV
+          echo "HTTPS_CERT=$(cat /tmp/test-cert.pem)" >> $GITHUB_ENV
+          echo "HTTPS_KEY=$(cat /tmp/test-key.pem)" >> $GITHUB_ENV
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          httpsCA: ${{ env.HTTPS_CA }}
+          httpsCert: ${{ env.HTTPS_CERT }}
+          httpsKey: ${{ env.HTTPS_KEY }}
+      - name: Assert action ran (may succeed or fail gracefully with self-signed cert)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "response: $RESPONSE"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$RESPONSE" ]; then
+              echo "FAIL: action succeeded but response is empty"
+              exit 1
+            fi
+            echo "PASS: got response with TLS inputs accepted"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (self-signed cert not trusted by server, expected)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

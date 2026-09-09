@@ -1,0 +1,36 @@
+name: Test escapeData escapes newlines in data
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/post'
+          method: 'POST'
+          contentType: 'application/json'
+          data: '{"message":"line1\nline2\nline3"}'
+          escapeData: 'true'
+      - name: Assert response is non-empty
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response output is empty"
+            exit 1
+          fi
+          echo "PASS: got a non-empty response with escapeData enabled"
+      - name: Assert request was processed successfully
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if ! echo "$RESPONSE" | grep -q '"message"'; then
+            echo "FAIL: response does not contain the posted 'message' field"
+            exit 1
+          fi
+          echo "PASS: request with escaped data was processed successfully"
