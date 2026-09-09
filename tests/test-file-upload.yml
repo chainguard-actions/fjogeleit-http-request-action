@@ -1,0 +1,31 @@
+name: Test file input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a temporary file to upload
+        run: |
+          echo '{"hello": "world"}' > /tmp/test-upload.json
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/post'
+          method: POST
+          contentType: 'multipart/form-data'
+          data: '{}'
+          file: '/tmp/test-upload.json'
+      - name: Assert response status is 200
+        env:
+          STATUS: ${{ steps.action.outputs.status }}
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "status: $STATUS"
+          echo "response: $RESPONSE"
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: expected status 200, got $STATUS"
+            exit 1
+          fi
+          echo "PASS: got status 200"

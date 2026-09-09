@@ -1,0 +1,30 @@
+name: Test response headers output
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: 'GET'
+      - name: Assert response headers are populated
+        env:
+          HEADERS: ${{ steps.action.outputs.headers }}
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          echo "headers: $HEADERS"
+          if [ -z "$HEADERS" ]; then
+            echo "FAIL: headers output is empty"
+            exit 1
+          fi
+          # Headers should be a JSON object containing content-type
+          if ! echo "$HEADERS" | grep -qi 'content-type'; then
+            echo "FAIL: content-type not found in headers"
+            exit 1
+          fi
+          echo "PASS"

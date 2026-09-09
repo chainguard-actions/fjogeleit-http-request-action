@@ -1,0 +1,36 @@
+name: Test httpsCA, httpsCert, and httpsKey inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Generate self-signed cert and key for test
+        run: |
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/test.key -out /tmp/test.crt \
+            -days 1 -nodes -subj "/CN=test"
+          echo "CERT=$(cat /tmp/test.crt)" >> $GITHUB_ENV
+          echo "KEY=$(cat /tmp/test.key)" >> $GITHUB_ENV
+          echo "CA=$(cat /tmp/test.crt)" >> $GITHUB_ENV
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          httpsCA: ${{ env.CA }}
+          httpsCert: ${{ env.CERT }}
+          httpsKey: ${{ env.KEY }}
+          ignoreSsl: 'true'
+      - name: Assert response status is 200
+        env:
+          STATUS: ${{ steps.action.outputs.status }}
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "status: $STATUS"
+          echo "response: $RESPONSE"
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: expected status 200, got $STATUS"
+            exit 1
+          fi
+          echo "PASS: got status 200 with httpsCA/httpsCert/httpsKey inputs set"

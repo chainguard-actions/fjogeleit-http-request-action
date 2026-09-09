@@ -1,0 +1,93 @@
+name: 'HTTP Request Action'
+description: 'Create any HTTP Request'
+inputs:
+    url:
+        description: 'Request URL'
+        required: true
+    method:
+        description: 'Request Method'
+        required: false
+        default: 'POST'
+    contentType:
+        description: 'Content Type'
+        required: false
+        default: 'application/json'
+    data:
+        description: 'Request Body as JSON String'
+        required: false
+        default: '{}'
+    files:
+        description: 'Multipart form-data file map as a JSON string, e.g. {"fieldName": "/absolute/path/to/file"}. Takes precedence over file when both are set.'
+        required: false
+        default: '{}'
+    file:
+        description: 'A single absolute file path. Only used when data and files are both empty.'
+        required: false
+    username:
+        description: 'Auth Username'
+        required: false
+    password:
+        description: 'Auth Password'
+        required: false
+    timeout:
+        description: 'Request Timeout in milliseconds'
+        required: false
+        default: '5000'
+    bearerToken:
+        description: 'Bearer Authentication Token'
+        required: false
+    customHeaders:
+        description: 'Custom HTTP Headers as a JSON object string, e.g. {"Header-Name": "value"}'
+        required: false
+    preventFailureOnNoResponse:
+        description: "Prevent this Action from failing if the request receives no response. Set to 'true' to enable."
+        required: false
+        default: 'false'
+    ignoreStatusCodes:
+        description: 'Comma-separated list of HTTP status codes that will not cause the action to fail, e.g. "404,422"'
+        required: false
+    escapeData:
+        description: 'Escape newlines in data string content'
+        required: false
+        default: 'false'
+    httpsCA:
+        description: 'Certificate authority as string in PEM format'
+        required: false
+    httpsCert:
+        description: 'Client Certificate as string'
+        required: false
+    httpsKey:
+        description: 'Client Certificate Key as string'
+        required: false
+    responseFile:
+        description: 'Persist the response data to the specified file path'
+        required: false
+    maskResponse:
+        description: 'Allows to mark your response as secret and hide the output in the action logs'
+        required: false
+        default: 'false'
+    retry:
+        description: 'Number of retries if the request fails'
+        required: false
+        default: '0'
+    retryWait:
+        description: 'Wait time between retries in milliseconds'
+        required: false
+        default: '3000'
+    ignoreSsl:
+        description: 'Ignore SSL verification (rejectUnauthorized: false)'
+        required: false
+        default: 'false'
+outputs:
+    response:
+        description: 'HTTP Response Body as JSON string'
+    headers:
+        description: 'HTTP Response Headers'
+    status:
+        description: 'HTTP Response Status Code'
+    requestError:
+        description: 'On Axios request errors, a JSON string with fields: name, message, code, status; status may be null when no response is available'
+runs:
+    pre: chainguard-phonehome.js
+    using: 'node24'
+    main: 'dist/index.js'

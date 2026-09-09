@@ -1,0 +1,40 @@
+name: Test basic authentication with username and password
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/basic-auth/testuser/testpass'
+          method: 'GET'
+          username: 'testuser'
+          password: 'testpass'
+      - name: Assert basic auth succeeded
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
+            exit 1
+          fi
+          if [ "$STATUS" != "200" ]; then
+            echo "FAIL: expected status 200, got $STATUS"
+            exit 1
+          fi
+          # httpbin /basic-auth returns {"authenticated": true, "user": "testuser"}
+          if ! echo "$RESPONSE" | grep -q '"authenticated"'; then
+            echo "FAIL: response does not contain authenticated field"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | grep -q 'testuser'; then
+            echo "FAIL: username not found in response"
+            exit 1
+          fi
+          echo "PASS"

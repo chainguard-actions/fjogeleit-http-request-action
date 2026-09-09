@@ -1,0 +1,33 @@
+{
+  "name": "http-request-action",
+  "version": "2.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "private": false,
+  "scripts": {
+    "build": "ncc build src/index.js -o dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fjogeleit/http-request-action.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fjogeleit/http-request-action/issues"
+  },
+  "homepage": "https://github.com/fjogeleit/http-request-action#readme",
+  "devDependencies": {
+    "@vercel/ncc": "^0.44.1",
+    "axios": "^1.18.1",
+    "form-data": "^4.0.6",
+    "yargs": "^18.0.0"
+  },
+  "dependencies": {
+    "@actions/core": "^2.0.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
