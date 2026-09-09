@@ -1,0 +1,31 @@
+name: Test responseFile persists response to disk
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: 'GET'
+          responseFile: '/tmp/http-response-output.json'
+      - name: Assert response file was created and contains data
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response output: $RESPONSE"
+          if [ ! -f /tmp/http-response-output.json ]; then
+            echo "FAIL: response file was not created at /tmp/http-response-output.json"
+            exit 1
+          fi
+          FILE_CONTENT=$(cat /tmp/http-response-output.json)
+          echo "file content: $FILE_CONTENT"
+          if [ -z "$FILE_CONTENT" ]; then
+            echo "FAIL: response file is empty"
+            exit 1
+          fi
+          echo "$FILE_CONTENT" | grep -q '"url"' || { echo "FAIL: response file does not contain expected content"; exit 1; }
+          echo "PASS"

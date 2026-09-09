@@ -1,0 +1,27 @@
+name: Test PUT request method
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/put'
+          method: 'PUT'
+          contentType: 'application/json'
+          data: '{"updated":true,"name":"test-resource"}'
+      - name: Assert PUT response contains sent data
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response output is empty"
+            exit 1
+          fi
+          echo "$RESPONSE" | grep -q '"updated"' || { echo "FAIL: response does not echo back updated field"; exit 1; }
+          echo "$RESPONSE" | grep -q '"name"' || { echo "FAIL: response does not echo back name field"; exit 1; }
+          echo "PASS"
