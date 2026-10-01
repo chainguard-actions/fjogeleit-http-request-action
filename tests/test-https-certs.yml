@@ -6,52 +6,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Generate self-signed CA, client cert and key
+      - name: Generate self-signed client cert and key
         run: |
-          # Generate a self-signed CA
-          openssl req -x509 -newkey rsa:2048 -keyout /tmp/ca.key -out /tmp/ca.crt \
-            -days 1 -nodes -subj "/CN=TestCA"
-          # Generate a client key and CSR
-          openssl req -newkey rsa:2048 -keyout /tmp/client.key -out /tmp/client.csr \
-            -nodes -subj "/CN=TestClient"
-          # Sign the client cert with the CA
-          openssl x509 -req -in /tmp/client.csr -CA /tmp/ca.crt -CAkey /tmp/ca.key \
-            -CAcreateserial -out /tmp/client.crt -days 1
-          echo "CA_CERT<<EOF" >> $GITHUB_ENV
-          cat /tmp/ca.crt >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          echo "CLIENT_CERT<<EOF" >> $GITHUB_ENV
-          cat /tmp/client.crt >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          echo "CLIENT_KEY<<EOF" >> $GITHUB_ENV
-          cat /tmp/client.key >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/client.key \
+            -out /tmp/client.crt -days 1 -nodes \
+            -subj "/CN=test-client"
+          echo "HTTPS_CERT=$(cat /tmp/client.crt)" >> $GITHUB_ENV
+          echo "HTTPS_KEY=$(cat /tmp/client.key)" >> $GITHUB_ENV
+          # Use the system CA bundle content for httpsCA
+          # We read the ISRG Root X1 cert (Let's Encrypt root) from the system store
+          # httpbin.org uses Let's Encrypt, so this should work
+          # Actually, pass the full system CA bundle to ensure connectivity
+          CA_CONTENT=$(cat /etc/ssl/certs/ca-certificates.crt)
+          # Store to a file to avoid env var size limits
+          echo "$CA_CONTENT" > /tmp/ca-bundle.pem
+      - name: Set CA env var from file
+        run: |
+          {
+            echo 'HTTPS_CA<<EOF_CA'
+            cat /tmp/ca-bundle.pem
+            echo 'EOF_CA'
+          } >> $GITHUB_ENV
       - id: action
         uses: .
-        continue-on-error: true
         with:
           url: 'https://httpbin.org/get'
           method: 'GET'
-          httpsCA: ${{ env.CA_CERT }}
-          httpsCert: ${{ env.CLIENT_CERT }}
-          httpsKey: ${{ env.CLIENT_KEY }}
-          ignoreStatusCodes: '400,401,403,404,500,502,503'
-      - name: Assert action ran with https cert inputs
+          httpsCA: ${{ env.HTTPS_CA }}
+          httpsCert: ${{ env.HTTPS_CERT }}
+          httpsKey: ${{ env.HTTPS_KEY }}
+      - name: Assert response is non-empty
         env:
-          OUTCOME: ${{ steps.action.outcome }}
-          ACTUAL: ${{ steps.action.outputs.response }}
+          RESPONSE: ${{ steps.action.outputs.response }}
         run: |
-          echo "outcome: $OUTCOME"
-          echo "actual: $ACTUAL"
-          if [ "$OUTCOME" = "success" ]; then
-            if [ -z "$ACTUAL" ]; then
-              echo "FAIL: action succeeded but response is empty"
-              exit 1
-            fi
-            echo "PASS: got response with https cert inputs"
-          elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (custom CA may not trust httpbin.org)"
-          else
-            echo "FAIL: unexpected outcome '$OUTCOME'"
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: response is empty"
             exit 1
           fi
+          echo "PASS: got a response with TLS cert inputs set"

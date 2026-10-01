@@ -13,13 +13,13 @@ jobs:
           method: 'GET'
           retry: '2'
           retryWait: '500'
-      - name: Assert response is not empty
+      - name: Assert response is non-empty
         env:
-          ACTUAL: ${{ steps.action.outputs.response }}
+          RESPONSE: ${{ steps.action.outputs.response }}
         run: |
-          echo "actual: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
             echo "FAIL: response is empty"
             exit 1
           fi
-          echo "PASS: got response with retry inputs configured"
+          echo "PASS: got a response with retry inputs set"

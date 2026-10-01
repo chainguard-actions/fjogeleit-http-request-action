@@ -1,4 +1,4 @@
-name: Test file upload (single file input)
+name: Test file input (single file upload)
 on:
   workflow_dispatch:
 jobs:
@@ -6,22 +6,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create a test file to upload
+      - name: Create a temporary file to upload
         run: |
-          echo '{"hello": "world"}' > /tmp/test-upload.json
+          echo '{"hello":"world"}' > /tmp/upload-test.json
       - id: action
         uses: .
         with:
           url: 'https://httpbin.org/post'
           method: 'POST'
-          file: '/tmp/test-upload.json'
-      - name: Assert response is not empty
+          file: '/tmp/upload-test.json'
+      - name: Assert response is non-empty
         env:
-          ACTUAL: ${{ steps.action.outputs.response }}
+          RESPONSE: ${{ steps.action.outputs.response }}
         run: |
-          echo "actual: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
             echo "FAIL: response is empty"
             exit 1
           fi
-          echo "PASS: got response"
+          echo "PASS: got a response"
