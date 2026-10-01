@@ -10,10 +10,10 @@ jobs:
         uses: .
         with:
           url: 'https://httpbin.org/get'
-          method: GET
+          method: 'GET'
           retry: '2'
           retryWait: '500'
-      - name: Assert response received with retry inputs accepted
+      - name: Assert response is not empty
         env:
           RESPONSE: ${{ steps.action.outputs.response }}
         run: |
@@ -22,4 +22,4 @@ jobs:
             echo "FAIL: response is empty"
             exit 1
           fi
-          echo "PASS: got response with retry inputs accepted"
+          echo "PASS: got a response with retry inputs set"

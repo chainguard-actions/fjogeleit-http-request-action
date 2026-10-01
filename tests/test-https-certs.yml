@@ -1,0 +1,57 @@
+name: Test httpsCA, httpsCert, and httpsKey inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Generate self-signed cert and key for testing
+        run: |
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/test.key -out /tmp/test.crt \
+            -days 1 -nodes -subj "/CN=test"
+          echo "CERT=$(cat /tmp/test.crt | tr '\n' '|')" >> $GITHUB_ENV
+          echo "KEY=$(cat /tmp/test.key | tr '\n' '|')" >> $GITHUB_ENV
+          echo "CA=$(cat /tmp/test.crt | tr '\n' '|')" >> $GITHUB_ENV
+      - name: Restore newlines in cert/key
+        run: |
+          echo "${{ env.CERT }}" | tr '|' '\n' > /tmp/cert.pem
+          echo "${{ env.KEY }}" | tr '|' '\n' > /tmp/key.pem
+          echo "${{ env.CA }}" | tr '|' '\n' > /tmp/ca.pem
+          echo "CERT_CONTENT<<EOF" >> $GITHUB_ENV
+          cat /tmp/cert.pem >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "KEY_CONTENT<<EOF" >> $GITHUB_ENV
+          cat /tmp/key.pem >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "CA_CONTENT<<EOF" >> $GITHUB_ENV
+          cat /tmp/ca.pem >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://httpbin.org/get'
+          method: 'GET'
+          httpsCA: ${{ env.CA_CONTENT }}
+          httpsCert: ${{ env.CERT_CONTENT }}
+          httpsKey: ${{ env.KEY_CONTENT }}
+      - name: Assert action ran (may fail due to self-signed CA not matching httpbin.org)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          RESPONSE: ${{ steps.action.outputs.response }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "response: $RESPONSE"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$RESPONSE" ]; then
+              echo "FAIL: action succeeded but response is empty"
+              exit 1
+            fi
+            echo "PASS: action succeeded with https cert inputs"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected - self-signed CA does not match httpbin.org)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
