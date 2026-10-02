@@ -1,0 +1,38 @@
+name: Test httpsCA, httpsCert, httpsKey inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Generate self-signed cert for testing
+        run: |
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/client.key -out /tmp/client.crt \
+            -days 1 -nodes -subj "/CN=test"
+          openssl req -x509 -newkey rsa:2048 -keyout /tmp/ca.key -out /tmp/ca.crt \
+            -days 1 -nodes -subj "/CN=test-ca"
+          echo "HTTPS_CA=$(cat /tmp/ca.crt)" >> $GITHUB_ENV
+          echo "HTTPS_CERT=$(cat /tmp/client.crt)" >> $GITHUB_ENV
+          echo "HTTPS_KEY=$(cat /tmp/client.key)" >> $GITHUB_ENV
+      - id: action
+        uses: .
+        with:
+          url: 'https://httpbin.org/get'
+          method: GET
+          httpsCA: ${{ env.HTTPS_CA }}
+          httpsCert: ${{ env.HTTPS_CERT }}
+          httpsKey: ${{ env.HTTPS_KEY }}
+          ignoreSsl: 'true'
+      - name: Assert response received
+        env:
+          RESPONSE: ${{ steps.action.outputs.response }}
+          STATUS: ${{ steps.action.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          echo "response length: ${#RESPONSE}"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: expected a response but got empty"
+            exit 1
+          fi
+          echo "PASS: got response with TLS inputs set"

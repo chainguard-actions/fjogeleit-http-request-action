@@ -16,13 +16,13 @@ jobs:
           escapeData: 'true'
       - name: Assert response received
         env:
-          RESP: ${{ steps.action.outputs.response }}
+          RESPONSE: ${{ steps.action.outputs.response }}
           STATUS: ${{ steps.action.outputs.status }}
         run: |
           echo "status: $STATUS"
-          echo "response: $RESP"
-          if [ -z "$RESP" ]; then
-            echo "FAIL: response is empty"
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: expected a response but got empty"
             exit 1
           fi
-          echo "PASS: got response with escapeData"
+          echo "PASS: got response with escapeData=true"

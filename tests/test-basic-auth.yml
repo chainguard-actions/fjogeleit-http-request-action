@@ -1,4 +1,4 @@
-name: Test Basic Auth (username + password)
+name: Test username and password inputs (basic auth)
 on:
   workflow_dispatch:
 jobs:
@@ -11,18 +11,22 @@ jobs:
         with:
           url: 'https://httpbin.org/basic-auth/testuser/testpass'
           method: GET
-          username: testuser
-          password: testpass
-      - name: Assert response contains authenticated
+          username: 'testuser'
+          password: 'testpass'
+      - name: Assert response received with auth success
         env:
-          RESP: ${{ steps.action.outputs.response }}
+          RESPONSE: ${{ steps.action.outputs.response }}
           STATUS: ${{ steps.action.outputs.status }}
         run: |
           echo "status: $STATUS"
-          echo "response: $RESP"
-          if echo "$RESP" | grep -q '"authenticated"'; then
-            echo "PASS: response contains authenticated"
+          echo "response: $RESPONSE"
+          if [ -z "$RESPONSE" ]; then
+            echo "FAIL: expected a response but got empty"
+            exit 1
+          fi
+          if echo "$RESPONSE" | grep -q '"authenticated": true'; then
+            echo "PASS: basic auth succeeded"
           else
-            echo "FAIL: expected authenticated in response"
+            echo "FAIL: expected authenticated=true in response"
             exit 1
           fi
