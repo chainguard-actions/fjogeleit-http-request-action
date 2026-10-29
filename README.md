@@ -6,15 +6,15 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.14.1 | [`v1.14.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.14.1) | [`eab8015`](https://github.com/fjogeleit/http-request-action/commit/eab8015483ccea148feff7b1c65f320805ddc2bf) |
-| v1.15.1 | [`v1.15.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.15.1) | [`3fee944`](https://github.com/fjogeleit/http-request-action/commit/3fee9441848d10b67a3ee774ce26fbe8152a6c7a) |
-| v1.15.2 | [`v1.15.2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.15.2) | [`0bd00a3`](https://github.com/fjogeleit/http-request-action/commit/0bd00a33db6f82063a3c6befd41f232f61d66583) |
-| v1.16.2 | [`v1.16.2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.16.2) | [`07eceb4`](https://github.com/fjogeleit/http-request-action/commit/07eceb44a46c6fa1161bd89f97aeec4ec409bfc8) |
-| v2 | [`v2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) |
-| v2.0 | [`v2.0`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2.0) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) |
-| v2.0.1 | [`v2.0.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2.0.1) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v1.14.1 | [`v1.14.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.14.1) | [`eab8015`](https://github.com/fjogeleit/http-request-action/commit/eab8015483ccea148feff7b1c65f320805ddc2bf) | [`HARDENING.md`](https://github.com/chainguard-actions/fjogeleit-http-request-action/blob/v1.14.1/HARDENING.md) |
+| v1.15.1 | [`v1.15.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.15.1) | [`3fee944`](https://github.com/fjogeleit/http-request-action/commit/3fee9441848d10b67a3ee774ce26fbe8152a6c7a) | [`HARDENING.md`](https://github.com/chainguard-actions/fjogeleit-http-request-action/blob/v1.15.1/HARDENING.md) |
+| v1.15.2 | [`v1.15.2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.15.2) | [`0bd00a3`](https://github.com/fjogeleit/http-request-action/commit/0bd00a33db6f82063a3c6befd41f232f61d66583) | [`HARDENING.md`](https://github.com/chainguard-actions/fjogeleit-http-request-action/blob/v1.15.2/HARDENING.md) |
+| v1.16.2 | [`v1.16.2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v1.16.2) | [`07eceb4`](https://github.com/fjogeleit/http-request-action/commit/07eceb44a46c6fa1161bd89f97aeec4ec409bfc8) | [`HARDENING.md`](https://github.com/chainguard-actions/fjogeleit-http-request-action/blob/v1.16.2/HARDENING.md) |
+| v2 | [`v2`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) | — |
+| v2.0 | [`v2.0`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2.0) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) | — |
+| v2.0.1 | [`v2.0.1`](https://github.com/chainguard-actions/fjogeleit-http-request-action/tree/v2.0.1) | [`f98bb26`](https://github.com/fjogeleit/http-request-action/commit/f98bb26551cd1af7d3eb2674578a80754ece88db) | [`HARDENING.md`](https://github.com/chainguard-actions/fjogeleit-http-request-action/blob/v2.0.1/HARDENING.md) |
 
 ## Privacy
 
